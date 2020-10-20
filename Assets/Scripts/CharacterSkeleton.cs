@@ -14,7 +14,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-class CharacterSkeleton
+public class CharacterSkeleton
 {
     public const int
       // JointType
@@ -118,9 +118,11 @@ class CharacterSkeleton
     private Vector3 savedPosition;
     private Quaternion savedHumanoidRotation;
     private int frameCnt = 0;
+    public Quaternion[] bonesRotation;
     public CharacterSkeleton(GameObject h)
     {
         humanoid = h;
+        bonesRotation = new Quaternion[targetBone.Length];
         rigBone = new Dictionary<HumanBodyBones, RigBone>();
         foreach (HumanBodyBones bone in humanBone)
         {
@@ -198,11 +200,12 @@ class CharacterSkeleton
                 // Debug.Log(joint[e].ToString("F3") +" "+ rigBone[targetBone[i]].transform.eulerAngles.ToString("F3"));
                 // trackingState[targetBone[i]] = System.Math.Min(jointState[e], jointState[s]);
                 // tmp += i.ToString()+" " + trackingSegment[targetBone[i]].ToString("F4") + prev.ToString("F4") + ", ";
-                rigBone[targetBone[i]].transform.rotation = rotInv * Quaternion.FromToRotation(Vector3.up, trackingSegment[targetBone[i]]);
+                bonesRotation[i] = rotInv * Quaternion.FromToRotation(Vector3.up, trackingSegment[targetBone[i]]);
+                rigBone[targetBone[i]].transform.rotation = bonesRotation[i];
             }
         }  
         
-        rigBone[HumanBodyBones.UpperChest].offset(srot);
+        // rigBone[HumanBodyBones.UpperChest].offset(srot);
         Quaternion bodyRot = rot;
         if (mirrored)
         {

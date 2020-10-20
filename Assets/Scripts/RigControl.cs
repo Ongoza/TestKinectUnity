@@ -5,6 +5,8 @@ using System.Runtime.InteropServices;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using PathCreation;
+using TMPro;
+
 // using CylinderMeshCreator;
 //using System.Diagnostics;
 // Under Options / Text-Editor / C# / IntelliSense turn of the lowest tick Box (roughly something like: Do not show elements from Namespaces that are not imported)
@@ -22,13 +24,16 @@ public class RigControl : MonoBehaviour
     [DllImport("NTKINECTDLL")] private static extern int setSkeleton(System.IntPtr kinect, System.IntPtr data, System.IntPtr state, System.IntPtr id, bool video);
     int bodyCount = 1;
     int jointCount = 25;
-    bool showVideo = true;
+    bool showVideo = false;
+    private TextMeshPro results;
     public bool isKinect = false;
+    //public bool savePose = false;
     private System.IntPtr kinect;
     bool saveToFile = false;
+    
     GameObject[] obj;
     int counter;
-    bool isStop = false;
+    bool stop = false;
     public GameObject humanoid;
     public bool mirror = true;
     public bool move = true;
@@ -37,13 +42,15 @@ public class RigControl : MonoBehaviour
     public bool isShowCubes = false;
     private AnimSkeleton tmp_anim;
     private string result = "";
-    public Material material;
+    private SpeechRecognitionEngine speechRecognitionEngine;
+
+    // public Material cubesMaterial;
     List<Vector3> points = new List<Vector3>();
     List<Vector3> pointsRot = new List<Vector3>();
     void Start()
     {
         Debug.Log("Animation file path: " + Application.persistentDataPath + "/animsave.save");
-        tmp_anim = new AnimSkeleton();
+        tmp_anim = new AnimSkeleton();      
         // material = 
         /*        // add FPS Timer
                 GameObject cam = GameObject.Find("Main Camera");
@@ -51,6 +58,13 @@ public class RigControl : MonoBehaviour
                 ///*/
         ///
         skeleton = new CharacterSkeleton(humanoid);
+        GameObject text_root = new GameObject("Text");
+        results = text_root.AddComponent<TextMeshPro>();
+        results.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+        results.GetComponent<RectTransform>().sizeDelta = new Vector2(60, 20);
+        results.transform.position = new Vector3(0, 2, 0);
+
+        speechRecognitionEngine = new SpeechRecognitionEngine(skeleton, results);
         if (isKinect)
         {
             // get animation from Kinect
@@ -113,8 +127,7 @@ public class RigControl : MonoBehaviour
                     updateCubes(data, n);
                 }
                 skeleton.set(data, state, 0, mirror, move);
-                if (saveToFile)
-                {
+                if (saveToFile) {
                     AnimSkeletonItem tmp_item = new AnimSkeletonItem();
                     tmp_item.data = data;
                     tmp_item.state = state;
@@ -135,11 +148,11 @@ public class RigControl : MonoBehaviour
             {
                // curFrame = 0;
                 
-                if (!isStop) {
+                if (!stop) {
                     //List<Vector3> points2 = new List<Vector3> { new Vector3 { x = 0.1f, y = 0.1f, z = 0.1f }, new Vector3 { x = 1f, y = 1f, z = 1f }, new Vector3 { x = 0f, y = 1f, z = 0f } };
                     createPath(points);                    
                     // Application.Quit();
-                    isStop = true;
+                    stop = true;
                 }
 #if UNITY_EDITOR
                // Debug.Log("Stop the app!!");
@@ -172,7 +185,12 @@ public class RigControl : MonoBehaviour
     }
 
     void OnApplicationQuit()
+
     {
+        if (speechRecognitionEngine != null)
+        {
+            speechRecognitionEngine.Destroy();
+        }
         if (isShowCubes)
         {
             Debug.Log("Application ending after " + Time.time + " seconds");
