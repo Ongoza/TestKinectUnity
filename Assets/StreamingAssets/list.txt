@@ -1,1 +1,1 @@
-﻿t,body_forward,half_sit,hand_left,hand_right, hands_up,hands_forward,sit,stay
+﻿t,body_forward,half_sit,hand_left,hand_right, hands_up,hands_forward,sit,stay 
