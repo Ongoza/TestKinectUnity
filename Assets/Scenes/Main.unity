@@ -657,7 +657,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isKinect: 1
-  savePose: 1
   humanoid: {fileID: 439285235}
   mirror: 1
   move: 1
